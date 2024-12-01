@@ -1,38 +1,54 @@
 <?php
-// Import PHPMailer classes into the global namespace
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Require autoload if using Composer (change path if required)
 require 'vendor/autoload.php';
 
-// Create an instance of PHPMailer
-$mail = new PHPMailer(true);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Collect user inputs
+    $name = htmlspecialchars($_POST['name']);
+    $email = htmlspecialchars($_POST['email']);
+    $subject = htmlspecialchars($_POST['subject']);
+    $message = htmlspecialchars($_POST['message']);
 
-try {
-    // SMTP settings
-    $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';                 // Gmail SMTP server
-    $mail->SMTPAuth = true;
-    $mail->Username = 'ankitomprakashtiwari2001@gmail.com';  // Sender's email
-    $mail->Password = 'plor ozyu wkru vjxi'; // Sender's email password or app-specific password
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+    // Email configuration
+    $adminEmail = 'ankitomprakashtiwari2001@gmail.com'; // Replace with your admin email
+    $fromEmail = 'ankitomprakashtiwari2001@gmail.com'; // Gmail account configured with SMTP
+    $fromPassword = 'plor ozyu wkru vjxi'; // Gmail app password
 
-    // Sender and recipient settings
-    $mail->setFrom('ankitomprakashtiwari2001@gmail.com', 'Ankit Tiwari');
-    $mail->addAddress('ankittiwari77759@gmail.com', 'Ankit Tiwari'); // Receiver's email and name
+    $mail = new PHPMailer(true);
 
-    // Email content
-    $mail->isHTML(true);
-    $mail->Subject = 'Test Email from PHPMailer';
-    $mail->Body    = '<h1>Hello, Ankit!</h1><p>This is a test email sent using PHPMailer.</p>';
-    $mail->AltBody = 'This is the plain text version of the email content';
+    try {
+        // SMTP settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = $fromEmail;
+        $mail->Password = $fromPassword;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
 
-    // Send the email
-    $mail->send();
-    echo 'Message has been sent successfully';
-} catch (Exception $e) {
-    echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+        // Email content
+        $mail->setFrom($fromEmail, 'Website Contact Form');
+        $mail->addAddress($adminEmail); // Admin email
+        $mail->isHTML(true);
+        $mail->Subject = "New Contact Form Submission: $subject";
+        $mail->Body = "
+            <h2>New Contact Form Submission</h2>
+            <p><strong>Name:</strong> $name</p>
+            <p><strong>Email:</strong> $email</p>
+            <p><strong>Subject:</strong> $subject</p>
+            <p><strong>Message:</strong></p>
+            <p>$message</p>
+        ";
+        $mail->AltBody = "Name: $name\nEmail: $email\nSubject: $subject\nMessage: $message";
+
+        $mail->send();
+        echo "Your message has been sent successfully!";
+    } catch (Exception $e) {
+        echo "Message could not be sent. Error: {$mail->ErrorInfo}";
+    }
+} else {
+    echo "Invalid request method.";
 }
 ?>
